@@ -1,0 +1,65 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    $(function () {
+        $("#frmSubmit").submit(function (e) {
+            e.preventDefault();
+
+            $("#loading").css("visibility", "visible");
+            var code = $("#txtCode").val();
+
+            $.ajax({
+                url: "https://localhost:44307/currency",
+                type: "GET",
+                data: {
+                    code: code
+                },
+                success: function (response) {
+                    var canvas = d3.select("#chart").append("svg")
+                        .attr("width", 500)
+                        .attr("height", 500);
+
+                    canvas.selectAll("rect")
+                        .data(response)
+                        .enter()
+                        .append("rect")
+                        .attr("width", function (d) { return d.forex_buying * 10; })
+                        .attr("height", 40)
+                        .attr("y", function (d, i) { return i * 50 })
+                        .attr("fill", "orange")
+
+                    canvas.selectAll("text")
+                        .data(response)
+                        .enter()
+                        .append("text")
+                        .attr("fill", "white")
+                        .attr("y", function (d, i) { return i * 50 + 24 })
+                        .text(function (d) { return d.created_on; })
+
+                    $("#loading").css("visibility", "hidden");
+                },
+                error: function (xhr) {
+                    console.log(xhr);
+                }
+            });
+        });
+    });
+</script>
+
+<div class="text-center mt-5">
+    <form id="frmSubmit" class="d-flex" role="search" style="display:flex; justify-content:center">
+        <input id="txtCode" class="form-control me-2" type="search" placeholder="Currency Code" aria-label="Search" required>
+        <button class="btn btn-dark" type="submit" style="margin-left:5px">SEARCH</button>
+    </form>
+    <div style="visibility:hidden" id="loading">Loading...</div>
+    <div id="chart" class="mt-2"></div>
+</div>
+
+
+
